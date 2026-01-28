@@ -1,0 +1,25 @@
+<svg width="42" height="32" viewBox="0 0 42 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g filter="url(#filter0_ii_429_10355)">
+<path d="M1 4.75C1 2.67893 2.67893 1 4.75 1H37.25C39.3211 1 41 2.67893 41 4.75V27.25C41 29.3211 39.3211 31 37.25 31H4.75C2.67893 31 1 29.3211 1 27.25V4.75Z" fill="#FFDAC2"/>
+<path d="M17.25 12.25H24.75V19.75H17.25V12.25Z" fill="#FFDAC2"/>
+</g>
+<path d="M17.25 12.25H24.75M17.25 12.25V19.75M17.25 12.25L14.7755 9.2038C14.0635 8.32718 12.9942 7.81818 11.8648 7.81818H1M24.75 12.25V19.75M24.75 12.25L27.5301 9.09083C28.242 8.28181 29.2676 7.81818 30.3452 7.81818H41M24.75 19.75H17.25M24.75 19.75L27.5301 22.9092C28.242 23.7182 29.2676 24.1818 30.3453 24.1818H41M17.25 19.75L14.7755 22.7962C14.0635 23.6728 12.9942 24.1818 11.8648 24.1818H1M21.3125 1V8.5M21.3125 23.5V31M41 16.3409H28.5M13.5 16.3409H1M4.75 31H37.25C39.3211 31 41 29.3211 41 27.25V4.75C41 2.67893 39.3211 1 37.25 1H4.75C2.67893 1 1 2.67893 1 4.75V27.25C1 29.3211 2.67893 31 4.75 31Z" stroke="#0A0D14"/>
+<defs>
+<filter id="filter0_ii_429_10355" x="0.5" y="-1.5" width="41" height="35" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="2"/>
+<feGaussianBlur stdDeviation="3"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0"/>
+<feBlend mode="overlay" in2="shape" result="effect1_innerShadow_429_10355"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="-2"/>
+<feGaussianBlur stdDeviation="1"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.48 0"/>
+<feBlend mode="overlay" in2="effect1_innerShadow_429_10355" result="effect2_innerShadow_429_10355"/>
+</filter>
+</defs>
+</svg>

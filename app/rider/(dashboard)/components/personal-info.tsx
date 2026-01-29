@@ -315,7 +315,13 @@ export const SuccessForm = ({ setOnboardingCompleted }: { setOnboardingCompleted
     <p className="lg:text-[16px] text-[14px] text-center mb-[56px] max-w-[552px] font-normal leading-[21px] tracking-[-4%] text-[#8A8A8C]">
       Thank you for completing your setup! Our team is reviewing your documents. Once verified, you’ll be ready to start accepting delivery orders and earning with Kaya.
     </p>
-    <button className="text-[#00ABFD] text-[16px] font-semibold leading-[20px] tracking-[-4%]" onClick={() => setOnboardingCompleted(true)}>
+    <button
+      className="text-[#00ABFD] text-[16px] font-semibold leading-[20px] tracking-[-4%]"
+      onClick={() => {
+        localStorage.setItem("rider_onboarding_completed", "true");
+        setOnboardingCompleted(true);
+      }}
+    >
       Go to Dashboard
     </button>
   </div>

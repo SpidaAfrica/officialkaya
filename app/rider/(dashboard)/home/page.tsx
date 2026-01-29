@@ -10,6 +10,8 @@ import React, { useState, useEffect } from "react";
 import { CircleCheck, ChevronRight } from "lucide-react";
 import { VerificationPage } from "../components/verificationComp";
 
+const ONBOARDING_COMPLETE_KEY = "rider_onboarding_completed";
+
 const Page = () => {
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const [activeStep, setActiveStep] = useState<number | null>(null);
@@ -21,6 +23,11 @@ const Page = () => {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
       sessionStorage.setItem("rider_id", parsedUser.user["id"]);
+    }
+
+    const onboardingStatus = localStorage.getItem(ONBOARDING_COMPLETE_KEY);
+    if (onboardingStatus === "true") {
+      setOnboardingCompleted(true);
     }
   }, []);
 

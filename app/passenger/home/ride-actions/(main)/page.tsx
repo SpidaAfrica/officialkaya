@@ -164,23 +164,58 @@ type RideState =
 
 function RideActionSection() {
   const [rideState, setRideState] = useState<RideState>("loading");
+  const [availableRiders, setAvailableRiders] = useState<Rider[]>([]);
 
   useEffect(() => {
-    setTimeout(() => {
+    const storedId = sessionStorage.getItem("userId");
+    const storedCords = sessionStorage.getItem("pickupCoords");
+    const coords = storedCords ? JSON.parse(storedCords) : null;
+
+    if (
+      !storedId ||
+      typeof coords?.lat !== "number" ||
+      typeof coords?.lng !== "number"
+    ) {
       setRideState("no-rides");
-      setTimeout(() => {
-        setRideState("increase-fare");
-      }, 5000);
-    }, 2000);
+      return;
+    }
+
+    const { lat, lng } = coords;
+    const fetchAvailableRiders = async () => {
+      try {
+        const formData = new FormData();
+        formData.append("pickup_lat", lat.toString());
+        formData.append("pickup_lng", lng.toString());
+        formData.append("user_id", storedId);
+
+        const response = await fetch(
+          "https://api.kaya.ng/kaya-api/get-nearby-riders.php",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        const data = await response.json();
+
+        if (data.status === "success" && data.riders?.length > 0) {
+          setAvailableRiders(data.riders);
+          setRideState("available-rides");
+        } else {
+          setRideState("no-rides");
+        }
+      } catch (err) {
+        console.error("Fetch error:", err);
+        setRideState("no-rides");
+      }
+    };
+
+    fetchAvailableRiders();
   }, []);
 
   switch (rideState) {
     case "loading":
-      return (
-        <div className="h-full w-full py-8 flex items-center justify-center">
-          <Loader className="w-12 h-12 text-center text-primary animate-spin" />
-        </div>
-      );
+      return <DriverSearchLoader />;
 
     case "no-rides":
       return <NoRides />;
@@ -189,7 +224,12 @@ function RideActionSection() {
       return <FareIncreaseInterface setRideState={setRideState} />;
 
     case "available-rides":
-      return <AvailableRides setRideState={setRideState} />;
+      return (
+        <AvailableRides
+          availableRiders={availableRiders}
+          setRideState={setRideState}
+        />
+      );
 
     case "rider-details":
       return <AcceptedRiderDetails setRideState={setRideState} />;
@@ -525,55 +565,38 @@ type Rider = {
   distance: number;
 };
 
+function DriverSearchLoader() {
+  return (
+    <div className="h-full w-full py-10 flex flex-col items-center justify-center gap-3 text-center">
+      <Loader className="w-12 h-12 text-primary animate-spin" />
+      <div>
+        <p className="text-lg font-medium text-foreground">
+          Looking for a driver...
+        </p>
+        <p className="text-sm text-foreground/60">
+          We’ll let you know as soon as someone is available.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function AvailableRides({
+  availableRiders,
   setRideState,
 }: {
+  availableRiders: Rider[];
   setRideState: (state: RideState) => void;
 }) {
-  const [availableRiders, setAvailableRiders] = useState<Rider[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const storedId = sessionStorage.getItem("userId");
-    const storedCords = sessionStorage.getItem("pickupCoords");
 
-    if (storedId && storedCords) {
+    if (storedId) {
       setUserId(storedId);
-      const { lat, lng } = JSON.parse(storedCords);
-      fetchAvailableRiders(lat, lng, storedId);
     }
   }, []);
-
-  const fetchAvailableRiders = async (
-    pickupLat: number,
-    pickupLng: number,
-    userId: string
-  ) => {
-    try {
-      const formData = new FormData();
-      formData.append("pickup_lat", pickupLat.toString());
-      formData.append("pickup_lng", pickupLng.toString());
-      formData.append("user_id", userId);
-
-      const response = await fetch(
-        "https://api.kaya.ng/kaya-api/get-nearby-riders.php",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      const data = await response.json();
-
-      if (data.status === "success") {
-        setAvailableRiders(data.riders);
-      } else {
-        console.error("Server error:", data.message);
-      }
-    } catch (err) {
-      console.error("Fetch error:", err);
-    }
-  };
 
   const acceptRide = async (userId: string, riderId: string) => {
     const formData = new FormData();

@@ -176,11 +176,13 @@ function RideActionSection() {
       typeof coords?.lat !== "number" ||
       typeof coords?.lng !== "number"
     ) {
+
+    if (!storedId || !storedCords) {
       setRideState("no-rides");
       return;
     }
 
-    const { lat, lng } = coords;
+    const { lat, lng } = JSON.parse(storedCords);
     const fetchAvailableRiders = async () => {
       try {
         const formData = new FormData();

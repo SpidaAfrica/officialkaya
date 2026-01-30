@@ -14,14 +14,48 @@ const Page = () => {
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const [activeStep, setActiveStep] = useState<number | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [isLoadingStatus, setIsLoadingStatus] = useState(true);
 
   useEffect(() => {
     const storedUser = sessionStorage.getItem("user");
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
-      sessionStorage.setItem("rider_id", parsedUser.user["id"]);
+      const riderId = parsedUser.user["id"];
+      sessionStorage.setItem("rider_id", riderId);
+      const cachedStatus = localStorage.getItem(`rider_onboarding_${riderId}`);
+      if (cachedStatus === "completed") {
+        setOnboardingCompleted(true);
+        setIsLoadingStatus(false);
+        return;
+      }
+
+      fetch("https://api.kaya.ng/kaya-api/rider/onboarding-status.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ rider_id: riderId }),
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to fetch onboarding status");
+          return res.json();
+        })
+        .then((data) => {
+          if (data?.completed) {
+            localStorage.setItem(`rider_onboarding_${riderId}`, "completed");
+            setOnboardingCompleted(true);
+          }
+        })
+        .catch((error) => {
+          console.error("Onboarding status error:", error);
+        })
+        .finally(() => {
+          setIsLoadingStatus(false);
+        });
+      return;
     }
+    setIsLoadingStatus(false);
   }, []);
 
   const steps = [
@@ -63,7 +97,7 @@ const Page = () => {
     },
   ];
 
-  if (!user) return null;
+  if (!user || isLoadingStatus) return null;
   if (onboardingCompleted) return <VerificationPage />;
 
   return (

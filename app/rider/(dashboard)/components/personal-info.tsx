@@ -308,15 +308,36 @@ export const GuarantorInfo: React.FC<StepProps> = ({ setActiveStep }) => {
   );
 };
 
-export const SuccessForm = ({ setOnboardingCompleted }: { setOnboardingCompleted: (completed: boolean) => void }) => (
-  <div className="flex mx-auto lg:w-[558px] justify-center items-center w-full flex-col">
-    <Image src={success} width={275} height={254} className="mb-[35px]" alt="success" />
-    <p className="lg:text-[34px] text-[18px] font-semibold lg:leading-[38px] mb-4 tracking-[-6%] text-[#0A0D14]">Documents Submitted for Review</p>
-    <p className="lg:text-[16px] text-[14px] text-center mb-[56px] max-w-[552px] font-normal leading-[21px] tracking-[-4%] text-[#8A8A8C]">
-      Thank you for completing your setup! Our team is reviewing your documents. Once verified, you’ll be ready to start accepting delivery orders and earning with Kaya.
-    </p>
-    <button className="text-[#00ABFD] text-[16px] font-semibold leading-[20px] tracking-[-4%]" onClick={() => setOnboardingCompleted(true)}>
-      Go to Dashboard
-    </button>
-  </div>
-);
+export const SuccessForm = ({ setOnboardingCompleted }: { setOnboardingCompleted: (completed: boolean) => void }) => {
+  const handleFinish = async () => {
+    const riderId = sessionStorage.getItem("rider_id");
+    if (riderId) {
+      try {
+        await fetch("https://api.kaya.ng/kaya-api/rider/complete-onboarding.php", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ rider_id: riderId }),
+        });
+        localStorage.setItem(`rider_onboarding_${riderId}`, "completed");
+      } catch (error) {
+        console.error("Onboarding completion error:", error);
+      }
+    }
+    setOnboardingCompleted(true);
+  };
+
+  return (
+    <div className="flex mx-auto lg:w-[558px] justify-center items-center w-full flex-col">
+      <Image src={success} width={275} height={254} className="mb-[35px]" alt="success" />
+      <p className="lg:text-[34px] text-[18px] font-semibold lg:leading-[38px] mb-4 tracking-[-6%] text-[#0A0D14]">Documents Submitted for Review</p>
+      <p className="lg:text-[16px] text-[14px] text-center mb-[56px] max-w-[552px] font-normal leading-[21px] tracking-[-4%] text-[#8A8A8C]">
+        Thank you for completing your setup! Our team is reviewing your documents. Once verified, you’ll be ready to start accepting delivery orders and earning with Kaya.
+      </p>
+      <button className="text-[#00ABFD] text-[16px] font-semibold leading-[20px] tracking-[-4%]" onClick={handleFinish}>
+        Go to Dashboard
+      </button>
+    </div>
+  );
+};

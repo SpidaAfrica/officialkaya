@@ -195,6 +195,7 @@ export const SingleOrderCard = ({
   setActiveOrder,
   refreshOrders,
 }: SingleOrderCardProps) => {
+  const [offerAmount, setOfferAmount] = useState<string>("");
 
   if (typeof window === "undefined") return; // Prevent code from running on server
   
@@ -228,6 +229,41 @@ export const SingleOrderCard = ({
     } catch (error) {
       console.error("Error updating order:", error);
       alert("Failed to update order.");
+    }
+  };
+
+  const handleOfferSubmit = async () => {
+    if (!riderId || !order.order_id) {
+      alert("Missing rider or order details.");
+      return;
+    }
+    const parsedAmount = Number(offerAmount);
+    if (!parsedAmount || parsedAmount <= 0) {
+      alert("Enter a valid offer amount.");
+      return;
+    }
+
+    try {
+      const res = await fetch("https://api.kaya.ng/kaya-api/rider/submit-offer.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order_id: order.order_id,
+          rider_id: riderId,
+          proposed_fare: parsedAmount,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert("Offer sent to passenger.");
+        setOfferAmount("");
+      } else {
+        alert(data.message || "Failed to send offer.");
+      }
+    } catch (error) {
+      console.error("Error sending offer:", error);
+      alert("Failed to send offer.");
     }
   };
   return (
@@ -305,6 +341,23 @@ export const SingleOrderCard = ({
             <div className="flex w-full lg:w-[231px] flex-row-reverse mt-6 lg:mt-auto lg:flex-col gap-5">
         {case2 === "available" ? (
           <>
+            <div className="flex flex-col gap-2 w-full">
+              <input
+                type="number"
+                min="0"
+                value={offerAmount}
+                onChange={(event) => setOfferAmount(event.target.value)}
+                placeholder="Propose fare (₦)"
+                className="w-full h-[44px] border border-[#E2E4E9] rounded-md px-3 text-sm"
+              />
+              <Button
+                variant="outline"
+                className="h-[44px]"
+                onClick={handleOfferSubmit}
+              >
+                Send Offer
+              </Button>
+            </div>
             <Button
               className="bg-[#00ABFD] h-[51px] text-white"
               onClick={() => handleAction("ongoing")}
@@ -886,4 +939,3 @@ export const ArrivalNotification = () => {
     </div>
   );
 };
-

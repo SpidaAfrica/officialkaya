@@ -752,7 +752,7 @@ function FareIncreaseInterface({
       formData.append("pickup_lng", pickupLng.toString());
       formData.append("user_id", userId);
 
-      const response = await fetch("https://api.kaya.ng/kaya-api/get-nearby-riders.php", {
+      const response = await fetch("https://api.kaya.ng/kaya-api/nearby-riders-with-offer.php", {
         method: "POST",
         body: formData,
       });

@@ -15,7 +15,11 @@ export const HeaderCard = () => {
   const [isAvailable, setIsAvailable] = useState(false);
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
 
-  const updateAvailabilityOnServer = async (lat: number, lng: number) => {
+  const updateAvailabilityOnServer = async (
+    lat: number | null,
+    lng: number | null,
+    isAvailable: boolean
+  ) => {
     const riderId = sessionStorage.getItem("rider_id");
     if (!riderId) {
       console.error("No rider ID found in sessionStorage.");
@@ -28,9 +32,9 @@ export const HeaderCard = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           rider_id: riderId,
-          latitude: lat,
-          longitude: lng,
-          is_available: true,
+          latitude: lat ?? 0,
+          longitude: lng ?? 0,
+          is_available: isAvailable,
         }),
       });
 
@@ -58,7 +62,7 @@ export const HeaderCard = () => {
             );
   
             console.log("Current position:", latitude, longitude);
-            updateAvailabilityOnServer(latitude, longitude);
+            updateAvailabilityOnServer(latitude, longitude, true);
           },
           (error) => {
             console.error("Error fetching geolocation:", error.message);
@@ -71,6 +75,14 @@ export const HeaderCard = () => {
     } else {
       setCoordinates(null);
   
+      const storedCoordinates = sessionStorage.getItem("riderCoordinates");
+      if (storedCoordinates) {
+        const parsed = JSON.parse(storedCoordinates);
+        updateAvailabilityOnServer(parsed.lat, parsed.lng, false);
+      } else {
+        updateAvailabilityOnServer(null, null, false);
+      }
+
       // Remove coordinates from sessionStorage
       if (typeof window !== "undefined") {
         sessionStorage.removeItem("riderCoordinates");

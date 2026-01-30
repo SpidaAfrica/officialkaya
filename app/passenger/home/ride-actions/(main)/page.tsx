@@ -177,6 +177,13 @@ function RideActionSection() {
   useEffect(() => {
     const storedId = sessionStorage.getItem("userId");
     const storedCords = sessionStorage.getItem("pickupCoords");
+    const coords = storedCords ? JSON.parse(storedCords) : null;
+
+    if (
+      !storedId ||
+      typeof coords?.lat !== "number" ||
+      typeof coords?.lng !== "number"
+    ) {
 
     if (!storedId || !storedCords) {
       setRideState("no-rides");

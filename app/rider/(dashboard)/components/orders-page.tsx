@@ -233,7 +233,8 @@ export const SingleOrderCard = ({
   };
 
   const handleOfferSubmit = async () => {
-    if (!riderId || !order.order_id) {
+    const requestId = order.order_id ?? order.id;
+    if (!riderId || !requestId) {
       alert("Missing rider or order details.");
       return;
     }
@@ -248,7 +249,7 @@ export const SingleOrderCard = ({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          order_id: order.order_id,
+          order_id: requestId,
           rider_id: riderId,
           proposed_fare: parsedAmount,
         }),

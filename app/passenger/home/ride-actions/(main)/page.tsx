@@ -789,6 +789,14 @@ function FareIncreaseInterface({
       const data = await res.json();
 
       if (data.status === "success") {
+        const rideRequestId =
+          data.ride_request_id ?? data.request_id ?? data.order_id ?? null;
+        if (rideRequestId) {
+          sessionStorage.setItem(
+            "ride_request_id",
+            String(rideRequestId)
+          );
+        }
         alert("Fare updated successfully!");
         setRideState("available-rides"); // move to next screen
       } else {

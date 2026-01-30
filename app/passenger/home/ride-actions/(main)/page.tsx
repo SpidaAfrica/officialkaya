@@ -776,9 +776,34 @@ function FareIncreaseInterface({
     if (!userId) return alert("No user found.");
 
     setLoading(true);
+    const storedCords = sessionStorage.getItem("pickupCoords");
+    let orderId: string | number | null = null;
+    if (storedCords) {
+      try {
+        const { lat, lng } = JSON.parse(storedCords);
+        const orderResponse = await fetch("https://api.kaya.ng/kaya-api/get-nearby-orders.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ lat, lng, distance: 5000 }),
+        });
+        const orderData = await orderResponse.json();
+        orderId =
+          orderData?.orders?.[0]?.order_id ??
+          orderData?.orders?.[0]?.id ??
+          null;
+      } catch (error) {
+        console.error("Failed to fetch nearby orders:", error);
+      }
+    }
+    if (!orderId) {
+      alert("Unable to find an order id for this request.");
+      setLoading(false);
+      return;
+    }
     const formData = new FormData();
     formData.append("user_id", userId);
     formData.append("fare", String(fare));
+    formData.append("order_id", String(orderId));
 
     try {
       const res = await fetch("https://api.kaya.ng/kaya-api/passenger-update-fare.php", {

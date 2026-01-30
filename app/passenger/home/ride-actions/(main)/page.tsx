@@ -202,7 +202,10 @@ function RideActionSection() {
         const data = await response.json();
 
         if (data.status === "success" && data.riders?.length > 0) {
-          setAvailableRiders(data.riders);
+          const onlineRiders = data.riders.filter(
+            (rider: Rider) => rider.is_online !== false
+          );
+          setAvailableRiders(onlineRiders);
           setRideState("available-rides");
         } else {
           setRideState("no-rides");
@@ -446,7 +449,10 @@ function AvailableRides({
       const data = await response.json();
 
       if (data.status === "success") {
-        setAvailableRiders(data.riders);
+        const onlineRiders = (data.riders || []).filter(
+          (rider: Rider) => rider.is_online !== false
+        );
+        setAvailableRiders(onlineRiders);
       } else {
         console.error("Server error:", data.message);
       }
@@ -564,6 +570,7 @@ type Rider = {
   rating: number;
   price: number;
   distance: number;
+  is_online?: boolean;
 };
 
 function DriverSearchLoader() {
@@ -752,7 +759,10 @@ function FareIncreaseInterface({
       const data = await response.json();
 
       if (data.status === "success") {
-        setAvailableRiders(data.riders);
+        const onlineRiders = (data.riders || []).filter(
+          (rider: Rider) => rider.is_online !== false
+        );
+        setAvailableRiders(onlineRiders);
       } else {
         console.error("Server error:", data.message);
       }
@@ -779,6 +789,14 @@ function FareIncreaseInterface({
       const data = await res.json();
 
       if (data.status === "success") {
+        const rideRequestId =
+          data.ride_request_id ?? data.request_id ?? data.order_id ?? null;
+        if (rideRequestId) {
+          sessionStorage.setItem(
+            "ride_request_id",
+            String(rideRequestId)
+          );
+        }
         alert("Fare updated successfully!");
         setRideState("available-rides"); // move to next screen
       } else {

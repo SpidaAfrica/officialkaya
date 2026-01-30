@@ -1,5 +1,4 @@
 "use client";
-export const dynamic = "force-dynamic";
 import AnimateInOut from "@/components/AnimateInOut";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -26,9 +25,16 @@ import { ChevronRight, Loader, Map, Phone, Slash, X } from "lucide-react";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { Info } from "lucide-react";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 
+export const dynamic = "force-dynamic";
 
 export default function RideActionsPage() {
   const [fromLocation, setFromLocation] = useState<string | undefined>();
@@ -37,23 +43,25 @@ export default function RideActionsPage() {
   const [paymentMethod, setPaymentMethod] = useState<string | undefined>();
   const [senderPhone, setSenderPhone] = useState<string | undefined>();
   const [recipientPhone, setRecipientPhone] = useState<string | undefined>();
-  const [packageDescription, setPackageDescription] = useState<string | undefined>();
+  const [packageDescription, setPackageDescription] = useState<
+    string | undefined
+  >();
   //const [packageId, setPackageId] = useState<string | undefined>();
-    
-  useEffect(() => {
-  const getSessionValue = (key: string): string | undefined => {
-    if (typeof window === 'undefined') return undefined;
-    return sessionStorage.getItem(key) ?? undefined;
-  };
 
-  setFromLocation(getSessionValue('fromLocation'));
-  setToLocation(getSessionValue('toLocation'));
-  setPrice(getSessionValue('price'));
-  setPaymentMethod(getSessionValue('paymentMethod'));
-  setSenderPhone(getSessionValue('senderPhone'));
-  setRecipientPhone(getSessionValue('recipientPhone'));
-  setPackageDescription(getSessionValue('packageDescription'));
-}, []);
+  useEffect(() => {
+    const getSessionValue = (key: string): string | undefined => {
+      if (typeof window === "undefined") return undefined;
+      return sessionStorage.getItem(key) ?? undefined;
+    };
+
+    setFromLocation(getSessionValue("fromLocation"));
+    setToLocation(getSessionValue("toLocation"));
+    setPrice(getSessionValue("price"));
+    setPaymentMethod(getSessionValue("paymentMethod"));
+    setSenderPhone(getSessionValue("senderPhone"));
+    setRecipientPhone(getSessionValue("recipientPhone"));
+    setPackageDescription(getSessionValue("packageDescription"));
+  }, []);
   return (
     <div className="flex flex-col-reverse md:flex-row gap-10">
       <div className="flex-1">
@@ -233,8 +241,6 @@ function RideActionSection() {
       break;
   }
 }
-
-import { DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface SendDriverMessageProps {
   riderPhone: string;

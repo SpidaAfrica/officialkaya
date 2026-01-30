@@ -192,7 +192,7 @@ function RideActionSection() {
         formData.append("user_id", storedId);
 
         const response = await fetch(
-          "https://api.kaya.ng/kaya-api/get-nearby-riders.php",
+          "https://api.kaya.ng/kaya-api/nearby-riders-with-offer.php",
           {
             method: "POST",
             body: formData,

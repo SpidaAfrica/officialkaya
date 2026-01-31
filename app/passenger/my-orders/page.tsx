@@ -32,6 +32,20 @@ type Package = {
   delivery_id: string;
   price: string;
   status: string;
+  from_location?: string;
+  pickup_lat?: number | string;
+  pickup_lon?: number | string;
+  pickup_lng?: number | string;
+  dropoff_lat?: number | string;
+  dropoff_lon?: number | string;
+  dropoff_lng?: number | string;
+  package_category?: string;
+  package_description?: string;
+  payment_method?: string;
+  sender_phone?: string;
+  recipient_phone?: string;
+  dynamic_stops?: any[];
+  user_id?: string | number;
 };
 
 interface ApiResponse {
@@ -197,7 +211,27 @@ export default function MyOrdersPage() {
         ) : packages.length ? (
           packages.map((pack) => (
             <Fragment key={pack.id}>
-              <DeliveryDetails>
+              <DeliveryDetails
+                type="order"
+                packageDataOverride={{
+                  from_location: pack.from_location ?? "",
+                  to_location: pack.to_location ?? "",
+                  pickup_lat: pack.pickup_lat,
+                  pickup_lon: pack.pickup_lon ?? pack.pickup_lng,
+                  dropoff_lat: pack.dropoff_lat,
+                  dropoff_lon: pack.dropoff_lon ?? pack.dropoff_lng,
+                  package_category: pack.package_category ?? "",
+                  package_description: pack.package_description ?? "",
+                  price: pack.price ?? "",
+                  payment_method: pack.payment_method ?? "",
+                  sender_phone: pack.sender_phone ?? "",
+                  recipient_phone: pack.recipient_phone ?? "",
+                  dynamic_stops: Array.isArray(pack.dynamic_stops)
+                    ? pack.dynamic_stops
+                    : [],
+                  user_id: pack.user_id ?? userId ?? "",
+                }}
+              >
                 <OrderCard data={pack} />
               </DeliveryDetails>
             </Fragment>

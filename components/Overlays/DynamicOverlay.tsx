@@ -26,7 +26,9 @@ PropsWithChildren<{
       <div className="block md:hidden">
         <Dialog onOpenChange={(state) => onOpenChange?.(state)}>
           <DialogTrigger asChild>{trigger}</DialogTrigger>
-          <DialogContent className="w-[90%] h-[90%]">{children}</DialogContent>
+          <DialogContent className="w-[90%] h-[90%] bg-white">
+            {children}
+          </DialogContent>
         </Dialog>
       </div>
     </>

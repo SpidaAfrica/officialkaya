@@ -173,6 +173,7 @@ type RideState =
 function RideActionSection() {
   const [rideState, setRideState] = useState<RideState>("loading");
   const [availableRiders, setAvailableRiders] = useState<Rider[]>([]);
+  const [nearbyRiders, setNearbyRiders] = useState<Rider[]>([]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -189,6 +190,37 @@ function RideActionSection() {
     }
 
     const { lat, lng } = JSON.parse(storedCords);
+    const fetchNearbyRiders = async () => {
+      try {
+        const formData = new FormData();
+        formData.append("pickup_lat", lat.toString());
+        formData.append("pickup_lng", lng.toString());
+        formData.append("user_id", storedId);
+
+        const response = await fetch(
+          "https://api.kaya.ng/kaya-api/get-nearby-riders.php",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        const data = await response.json();
+
+        if (data.status === "success" && data.riders?.length > 0) {
+          const onlineRiders = data.riders.filter(
+            (rider: Rider) => rider.is_online !== false
+          );
+          setNearbyRiders(onlineRiders);
+        } else {
+          setNearbyRiders([]);
+        }
+      } catch (err) {
+        console.error("Fetch error:", err);
+        setNearbyRiders([]);
+      }
+    };
+
     const fetchAvailableRiders = async () => {
       try {
         const formData = new FormData();
@@ -217,6 +249,9 @@ function RideActionSection() {
           );
           setAvailableRiders(onlineRiders);
           setRideState("available-rides");
+        } else if (data.status === "success") {
+          setAvailableRiders([]);
+          setRideState("increase-fare");
         } else {
           setRideState("no-rides");
         }
@@ -226,6 +261,7 @@ function RideActionSection() {
       }
     };
 
+    fetchNearbyRiders();
     fetchAvailableRiders();
   }, []);
 
@@ -237,12 +273,18 @@ function RideActionSection() {
       return <NoRides />;
 
     case "increase-fare":
-      return <FareIncreaseInterface setRideState={setRideState} />;
+      return (
+        <FareIncreaseInterface
+          setRideState={setRideState}
+          nearbyRiders={nearbyRiders}
+        />
+      );
 
     case "available-rides":
       return (
         <AvailableRides
           availableRiders={availableRiders}
+          nearbyRiders={nearbyRiders}
           setRideState={setRideState}
         />
       );
@@ -322,7 +364,7 @@ const [packageId, setPackageId] = useState(null);
             <Phone className="fill-foreground/80 stroke-none" />
           </button>
         </DialogTrigger>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm bg-white">
           <DialogTitle>Call Rider</DialogTitle>
           <DialogDescription>
             Do you want to call the rider at <strong>{riderPhone}</strong>?
@@ -351,7 +393,7 @@ function CancelRequest() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="bg-background md:min-w-[45rem] rounded-2xl">
+      <DialogContent className="bg-white md:min-w-[45rem] rounded-2xl">
         <div className="w-full h-full relative  py-16">
           <DialogTrigger asChild className="absolute top-4 right-4">
             <button>
@@ -625,9 +667,11 @@ function DriverSearchLoader() {
 
 function AvailableRides({
   availableRiders,
+  nearbyRiders,
   setRideState,
 }: {
   availableRiders: Rider[];
+  nearbyRiders: Rider[];
   setRideState: (state: RideState) => void;
 }) {
   const [userId, setUserId] = useState<string | null>(null);
@@ -665,10 +709,10 @@ function AvailableRides({
     <div className="mx-auto px-4 max-h-96 flex flex-col">
       <header className="space-y-3 border-b py-3">
         <h3 className="font-medium text-xl">Available Rides</h3>
-        {availableRiders.length > 0 && (
+        {nearbyRiders.length > 0 && (
           <div className="flex items-center text-sm text-foreground mb-4 gap-2">
             <div className="flex items-center -space-x-5">
-              {availableRiders.slice(0, 3).map((rider, i) => (
+              {nearbyRiders.slice(0, 3).map((rider, i) => (
                 <Image
                   key={i}
                   src={rider.image_url}
@@ -748,22 +792,20 @@ function AvailableRides({
 
 function FareIncreaseInterface({
   setRideState,
+  nearbyRiders,
 }: {
   setRideState: (state: RideState) => void;
+  nearbyRiders: Rider[];
 }) {
   const [fare, setFare] = useState(30000);
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [availableRiders, setAvailableRiders] = useState<any[]>([]);
   
   useEffect(() => {
     const storedId = sessionStorage.getItem("userId");
-    const storedCords = sessionStorage.getItem("pickupCoords");
   
-    if (storedId && storedCords) {
+    if (storedId) {
       setUserId(storedId);
-      const { lat, lng } = JSON.parse(storedCords);
-      fetchAvailableRiders(lat, lng, storedId); // pass storedId directly
     }
   }, []);
 
@@ -777,61 +819,11 @@ function FareIncreaseInterface({
   };
 
   
-  const fetchAvailableRiders = async (pickupLat: number, pickupLng: number, userId: string) => {
-    if (!userId) return alert("No user found.");
-    try {
-      const formData = new FormData();
-      formData.append("pickup_lat", pickupLat.toString());
-      formData.append("pickup_lng", pickupLng.toString());
-      formData.append("user_id", userId);
-      const storedOrderId = localStorage.getItem("order_id");
-      if (storedOrderId) {
-        formData.append("order_id", storedOrderId);
-      }
-      const response = await fetch("https://api.kaya.ng/kaya-api/get-nearby-riders.php", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (data.status === "success") {
-        const onlineRiders = (data.riders || []).filter(
-          (rider: Rider) => rider.is_online !== false
-        );
-        setAvailableRiders(onlineRiders);
-      } else {
-        console.error("Server error:", data.message);
-      }
-    } catch (err) {
-      console.error("Fetch error:", err);
-    }
-  };
-
-
   const submitFareUpdate = async () => {
     if (!userId) return alert("No user found.");
 
     setLoading(true);
-    const storedCords = sessionStorage.getItem("pickupCoords");
-    let orderId: string | number | null = null;
-    if (storedCords) {
-      try {
-        const { lat, lng } = JSON.parse(storedCords);
-        const orderResponse = await fetch("https://api.kaya.ng/kaya-api/get-nearby-orders.php", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ lat, lng, distance: 5000 }),
-        });
-        const orderData = await orderResponse.json();
-        orderId =
-          orderData?.orders?.[0]?.order_id ??
-          orderData?.orders?.[0]?.id ??
-          null;
-      } catch (error) {
-        console.error("Failed to fetch nearby orders:", error);
-      }
-    }
+    const orderId = localStorage.getItem("order_id");
     if (!orderId) {
       alert("Unable to find an order id for this request.");
       setLoading(false);
@@ -878,18 +870,19 @@ function FareIncreaseInterface({
       <header className="space-y-3 border-b py-3">
         <h3 className="font-medium text-xl">Available Rides</h3>
       
-        {availableRiders.length > 0 ? (
+        {nearbyRiders.length > 0 ? (
           <div className="flex items-center text-sm text-foreground mb-4 gap-2">
             <div className="flex items-center -space-x-5">
-              {availableRiders[0]?.image_url && (
+              {nearbyRiders.slice(0, 3).map((rider, index) => (
                 <Image
-                  src={availableRiders[0].image_url}
+                  key={index}
+                  src={rider.image_url}
                   alt="rider"
                   width={48}
                   height={48}
                   className="w-12 aspect-square object-cover rounded-full bg-purple-300"
                 />
-              )}
+              ))}
             </div>
             <span className="font-medium">are viewing request</span>
           </div>

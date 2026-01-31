@@ -66,6 +66,14 @@ export default function MyOrdersPage() {
   const [dateFilter, setDateFilter] = useState("today");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const toNumber = (value?: number | string) => {
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value === "string" && value.trim() !== "") {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) return parsed;
+    }
+    return undefined;
+  };
 
   useEffect(() => {
     const storedId = sessionStorage.getItem("userId");
@@ -216,10 +224,10 @@ export default function MyOrdersPage() {
                 packageDataOverride={{
                   from_location: pack.from_location ?? "",
                   to_location: pack.to_location ?? "",
-                  pickup_lat: pack.pickup_lat,
-                  pickup_lon: pack.pickup_lon ?? pack.pickup_lng,
-                  dropoff_lat: pack.dropoff_lat,
-                  dropoff_lon: pack.dropoff_lon ?? pack.dropoff_lng,
+                  pickup_lat: toNumber(pack.pickup_lat),
+                  pickup_lon: toNumber(pack.pickup_lon ?? pack.pickup_lng),
+                  dropoff_lat: toNumber(pack.dropoff_lat),
+                  dropoff_lon: toNumber(pack.dropoff_lon ?? pack.dropoff_lng),
                   package_category: pack.package_category ?? "",
                   package_description: pack.package_description ?? "",
                   price: pack.price ?? "",

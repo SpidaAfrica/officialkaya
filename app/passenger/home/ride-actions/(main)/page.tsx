@@ -581,6 +581,7 @@ type Rider = {
   price: number;
   distance: number;
   is_online?: boolean;
+  rider_fare: number;
 };
 
 function DriverSearchLoader() {
@@ -691,7 +692,7 @@ function AvailableRides({
               </div>
               <div>
                 <div className="text-lg font-bold text-right">
-                  NGN {ride.price?.toLocaleString()}
+                  NGN {ride.rider_fare?.toLocaleString()}
                 </div>
                 <div className="text-sm text-gray-500 text-right">
                   {ride.distance} km away

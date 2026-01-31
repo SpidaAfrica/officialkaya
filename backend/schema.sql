@@ -24,7 +24,6 @@ CREATE TABLE packages (
 
 CREATE TABLE ride_requests (
   id INT(11) NOT NULL AUTO_INCREMENT,
-  order_id VARCHAR(64) DEFAULT NULL,
   passenger_id INT(11) NOT NULL,
   rider_id INT(11) DEFAULT NULL,
   passenger_fare INT(11) DEFAULT 0,
@@ -33,7 +32,6 @@ CREATE TABLE ride_requests (
   status VARCHAR(50) DEFAULT 'pending',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  KEY idx_ride_requests_order (order_id),
   KEY idx_ride_requests_passenger (passenger_id),
   KEY idx_ride_requests_rider (rider_id),
   KEY idx_ride_requests_status (status)

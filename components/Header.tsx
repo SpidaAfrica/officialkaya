@@ -35,7 +35,7 @@ export const Header = ({
     const email = userData.email;
     if (!email) return;
 
-    fetch("https://jbuit.org/api/get-user.php", {
+    fetch("https://api.kaya.ng/kaya-api/get-user.php", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

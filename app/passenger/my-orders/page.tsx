@@ -237,7 +237,7 @@ export default function MyOrdersPage() {
                   dynamic_stops: Array.isArray(pack.dynamic_stops)
                     ? pack.dynamic_stops
                     : [],
-                  user_id: pack.user_id ?? userId ?? "",
+                  user_id: String(pack.user_id ?? userId ?? ""),
                 }}
               >
                 <OrderCard data={pack} />

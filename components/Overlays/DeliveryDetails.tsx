@@ -169,46 +169,61 @@ export function DeliveryDetails({
   }, []);
 
 
-  const handleSubmit = async () => {
-    if (!packageData) {
-      alert("Please fill in the delivery details before submitting.");
-      return;
-    }
+const handleSubmit = async () => {
+  if (!packageData) {
+    alert("Please fill in the delivery details before submitting.");
+    return;
+  }
 
-    try {
-      const response = await fetch("https://api.kaya.ng/kaya-api/create-package.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          user_id: packageData.user_id,
-          from_location: packageData.from_location,
-          to_location: packageData.to_location,
-          package_category: packageData.package_category,
-          package_description: packageData.package_description,
-          price: packageData.price,
-          payment_method: packageData.payment_method,
-          sender_phone: packageData.sender_phone,
-          recipient_phone: packageData.recipient_phone,
-          dynamic_stops: JSON.stringify(packageData.dynamic_stops),
-          pickup_lat: String(packageData.pickup_lat),
-          pickup_lon: String(packageData.pickup_lon),
-          dropoff_lat: String(packageData.dropoff_lat),
-          dropoff_lon: String(packageData.dropoff_lon),
-        }),
-      });
+  try {
+    const response = await fetch("https://api.kaya.ng/kaya-api/create-package.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        user_id: String(packageData.user_id),
+        from_location: packageData.from_location,
+        to_location: packageData.to_location,
+        package_category: packageData.package_category,
+        package_description: packageData.package_description,
+        price: String(packageData.price),
+        payment_method: packageData.payment_method,
+        sender_phone: packageData.sender_phone,
+        recipient_phone: packageData.recipient_phone,
+        dynamic_stops: JSON.stringify(packageData.dynamic_stops || []),
+        pickup_lat: String(packageData.pickup_lat),
+        pickup_lon: String(packageData.pickup_lon),
+        dropoff_lat: String(packageData.dropoff_lat),
+        dropoff_lon: String(packageData.dropoff_lon),
+      }),
+    });
 
-      const result = await response.json();
-      if (result.status === "success") {
-        alert("Package created successfully!");
-        router.push("/passenger/home/ride-actions");
-      } else {
-        alert(`Error: ${result.message}`);
+    const result = await response.json();
+
+    if (result.status === "success") {
+      // ✅ Get the exact created id
+      const orderId = result.order_id || result.package_id;
+
+      if (!orderId) {
+        alert("Package created, but order_id was not returned by backend.");
+        return;
       }
-    } catch (error) {
-      console.error("Package submission failed:", error);
-      alert("There was an error submitting the package.");
+
+      // ✅ Save it (so other pages can use it)
+      localStorage.setItem("order_id", String(orderId));
+
+      alert("Package created successfully!");
+
+      // ✅ pass it to next page too (optional but recommended)
+      router.push(`/passenger/home/ride-actions?order_id=${orderId}`);
+    } else {
+      alert(`Error: ${result.message}`);
     }
-  };
+  } catch (error) {
+    console.error("Package submission failed:", error);
+    alert("There was an error submitting the package.");
+  }
+};
+
 
   const updatePaymentMethod = (method: string) => {
     if (!packageData) return;

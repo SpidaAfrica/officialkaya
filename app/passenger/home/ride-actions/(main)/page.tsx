@@ -784,7 +784,10 @@ function FareIncreaseInterface({
       formData.append("pickup_lat", pickupLat.toString());
       formData.append("pickup_lng", pickupLng.toString());
       formData.append("user_id", userId);
-
+      const storedOrderId = localStorage.getItem("order_id");
+      if (storedOrderId) {
+        formData.append("order_id", storedOrderId);
+      }
       const response = await fetch("https://api.kaya.ng/kaya-api/get-nearby-riders.php", {
         method: "POST",
         body: formData,

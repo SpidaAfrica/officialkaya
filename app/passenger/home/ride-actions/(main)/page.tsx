@@ -191,8 +191,13 @@ function RideActionSection() {
         formData.append("pickup_lng", lng.toString());
         formData.append("user_id", storedId);
 
+        const storedOrderId = sessionStorage.getItem("ride_order_id");
+        if (storedOrderId) {
+          formData.append("order_id", storedOrderId);
+        }
+
         const response = await fetch(
-          "https://api.kaya.ng/kaya-api/get-nearby-riders.php",
+          "https://api.kaya.ng/kaya-api/nearby-riders-with-offers.php",
           {
             method: "POST",
             body: formData,
@@ -202,7 +207,10 @@ function RideActionSection() {
         const data = await response.json();
 
         if (data.status === "success" && data.riders?.length > 0) {
-          setAvailableRiders(data.riders);
+          const onlineRiders = data.riders.filter(
+            (rider: Rider) => rider.is_online !== false
+          );
+          setAvailableRiders(onlineRiders);
           setRideState("available-rides");
         } else {
           setRideState("no-rides");
@@ -438,7 +446,12 @@ function AvailableRides({
       formData.append("pickup_lng", pickupLng.toString());
       formData.append("user_id", userId);
 
-      const response = await fetch("https://api.kaya.ng/kaya-api/get-nearby-riders.php", {
+      const storedOrderId = sessionStorage.getItem("ride_order_id");
+      if (storedOrderId) {
+        formData.append("order_id", storedOrderId);
+      }
+
+      const response = await fetch("https://api.kaya.ng/kaya-api/nearby-riders-with-offers.php", {
         method: "POST",
         body: formData,
       });
@@ -446,7 +459,10 @@ function AvailableRides({
       const data = await response.json();
 
       if (data.status === "success") {
-        setAvailableRiders(data.riders);
+        const onlineRiders = (data.riders || []).filter(
+          (rider: Rider) => rider.is_online !== false
+        );
+        setAvailableRiders(onlineRiders);
       } else {
         console.error("Server error:", data.message);
       }
@@ -564,6 +580,7 @@ type Rider = {
   rating: number;
   price: number;
   distance: number;
+  is_online?: boolean;
 };
 
 function DriverSearchLoader() {
@@ -744,7 +761,12 @@ function FareIncreaseInterface({
       formData.append("pickup_lng", pickupLng.toString());
       formData.append("user_id", userId);
 
-      const response = await fetch("https://api.kaya.ng/kaya-api/get-nearby-riders.php", {
+      const storedOrderId = sessionStorage.getItem("ride_order_id");
+      if (storedOrderId) {
+        formData.append("order_id", storedOrderId);
+      }
+
+      const response = await fetch("https://api.kaya.ng/kaya-api/nearby-riders-with-offers.php", {
         method: "POST",
         body: formData,
       });
@@ -752,7 +774,10 @@ function FareIncreaseInterface({
       const data = await response.json();
 
       if (data.status === "success") {
-        setAvailableRiders(data.riders);
+        const onlineRiders = (data.riders || []).filter(
+          (rider: Rider) => rider.is_online !== false
+        );
+        setAvailableRiders(onlineRiders);
       } else {
         console.error("Server error:", data.message);
       }
@@ -766,9 +791,34 @@ function FareIncreaseInterface({
     if (!userId) return alert("No user found.");
 
     setLoading(true);
+    const storedCords = sessionStorage.getItem("pickupCoords");
+    let orderId: string | number | null = null;
+    if (storedCords) {
+      try {
+        const { lat, lng } = JSON.parse(storedCords);
+        const orderResponse = await fetch("https://api.kaya.ng/kaya-api/get-nearby-orders.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ lat, lng, distance: 5000 }),
+        });
+        const orderData = await orderResponse.json();
+        orderId =
+          orderData?.orders?.[0]?.order_id ??
+          orderData?.orders?.[0]?.id ??
+          null;
+      } catch (error) {
+        console.error("Failed to fetch nearby orders:", error);
+      }
+    }
+    if (!orderId) {
+      alert("Unable to find an order id for this request.");
+      setLoading(false);
+      return;
+    }
     const formData = new FormData();
     formData.append("user_id", userId);
     formData.append("fare", String(fare));
+    formData.append("order_id", String(orderId));
 
     try {
       const res = await fetch("https://api.kaya.ng/kaya-api/passenger-update-fare.php", {
@@ -779,6 +829,15 @@ function FareIncreaseInterface({
       const data = await res.json();
 
       if (data.status === "success") {
+        const rideRequestId =
+          data.ride_request_id ?? data.request_id ?? data.order_id ?? null;
+        if (rideRequestId) {
+          sessionStorage.setItem(
+            "ride_request_id",
+            String(rideRequestId)
+          );
+        }
+        sessionStorage.setItem("ride_order_id", String(orderId));
         alert("Fare updated successfully!");
         setRideState("available-rides"); // move to next screen
       } else {

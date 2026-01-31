@@ -364,7 +364,7 @@ const [packageId, setPackageId] = useState(null);
             <Phone className="fill-foreground/80 stroke-none" />
           </button>
         </DialogTrigger>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm bg-white">
           <DialogTitle>Call Rider</DialogTitle>
           <DialogDescription>
             Do you want to call the rider at <strong>{riderPhone}</strong>?
@@ -393,7 +393,7 @@ function CancelRequest() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="bg-background md:min-w-[45rem] rounded-2xl">
+      <DialogContent className="bg-white md:min-w-[45rem] rounded-2xl">
         <div className="w-full h-full relative  py-16">
           <DialogTrigger asChild className="absolute top-4 right-4">
             <button>

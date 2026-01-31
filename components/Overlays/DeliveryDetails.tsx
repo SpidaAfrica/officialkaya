@@ -41,11 +41,18 @@ type Package = {
   user_id: string;
 };
 
+type PackageOverride = Partial<Package> & {
+  pickup_lng?: number;
+  dropoff_lng?: number;
+  user_id?: string | number;
+};
+
 export function DeliveryDetails({
   actions,
   children,
   onOpenChange,
   open,
+  packageDataOverride,
   withMoreActions = true,
   type = "delivery",
 }: {
@@ -53,6 +60,7 @@ export function DeliveryDetails({
   children?: React.ReactNode;
   onOpenChange?: (open: boolean) => void;
   open?: boolean;
+  packageDataOverride?: PackageOverride;
   withMoreActions?: boolean;
   type?: "delivery" | "order";
 }) {
@@ -114,7 +122,16 @@ export function DeliveryDetails({
     loadData();
   }, []);
   */}
-  const loadPackageData = () => {
+  const coerceNumber = (value: unknown, fallback = 0) => {
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value === "string" && value.trim() !== "") {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) return parsed;
+    }
+    return fallback;
+  };
+
+  const loadPackageData = (override?: PackageOverride) => {
     const safeGet = (key: string, fallback = "") => {
       const value = sessionStorage.getItem(key);
       return value !== null && value.trim() !== "" ? value : fallback;
@@ -152,21 +169,50 @@ export function DeliveryDetails({
       sender_phone: safeGet("senderPhone"),
       recipient_phone: safeGet("recipientPhone"),
     };
-  
-    if (!data.from_location && !data.to_location) {
+
+    const mergedData: Package = {
+      ...data,
+      ...override,
+      from_location: override?.from_location ?? data.from_location,
+      to_location: override?.to_location ?? data.to_location,
+      pickup_lat: coerceNumber(override?.pickup_lat ?? data.pickup_lat),
+      pickup_lon: coerceNumber(
+        override?.pickup_lon ?? override?.pickup_lng ?? data.pickup_lon
+      ),
+      dropoff_lat: coerceNumber(override?.dropoff_lat ?? data.dropoff_lat),
+      dropoff_lon: coerceNumber(
+        override?.dropoff_lon ?? override?.dropoff_lng ?? data.dropoff_lon
+      ),
+      dynamic_stops: Array.isArray(override?.dynamic_stops)
+        ? override.dynamic_stops
+        : data.dynamic_stops,
+      user_id:
+        override?.user_id !== undefined && override?.user_id !== null
+          ? String(override.user_id)
+          : data.user_id,
+      package_category: override?.package_category ?? data.package_category,
+      package_description:
+        override?.package_description ?? data.package_description,
+      payment_method: override?.payment_method ?? data.payment_method,
+      price: override?.price ?? data.price,
+      sender_phone: override?.sender_phone ?? data.sender_phone,
+      recipient_phone: override?.recipient_phone ?? data.recipient_phone,
+    };
+
+    if (!mergedData.from_location && !mergedData.to_location) {
       console.warn("Essential data missing. User needs to fill form manually.");
       setPackageData(null);
     } else {
-      setPackageData(data);
+      setPackageData(mergedData);
     }
-  
+
     setLoading(false);
   };
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    loadPackageData();
-  }, []);
+    loadPackageData(packageDataOverride);
+  }, [packageDataOverride]);
 
 
 const handleSubmit = async () => {

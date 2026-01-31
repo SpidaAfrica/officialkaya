@@ -175,6 +175,11 @@ function RideActionSection() {
   const [availableRiders, setAvailableRiders] = useState<Rider[]>([]);
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      setRideState("no-rides");
+      return;
+    }
+
     const storedId = sessionStorage.getItem("userId");
     const storedCords = sessionStorage.getItem("pickupCoords");
 
@@ -191,25 +196,7 @@ function RideActionSection() {
         formData.append("pickup_lng", lng.toString());
         formData.append("user_id", storedId);
 
-        let storedOrderId = sessionStorage.getItem("ride_order_id");
-        if (!storedOrderId) {
-          const orderResponse = await fetch(
-            "https://api.kaya.ng/kaya-api/rider/get-nearby-orders.php",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ lat, lng, distance: 5000 }),
-            }
-          );
-          const orderData = await orderResponse.json();
-          storedOrderId =
-            orderData?.orders?.[0]?.order_id ??
-            orderData?.orders?.[0]?.id ??
-            null;
-          if (storedOrderId) {
-            sessionStorage.setItem("ride_order_id", String(storedOrderId));
-          }
-        }
+        const storedOrderId = localStorage.getItem("ride_order_id");
         if (storedOrderId) {
           formData.append("order_id", storedOrderId);
         }

@@ -194,7 +194,7 @@ function RideActionSection() {
         let storedOrderId = sessionStorage.getItem("ride_order_id");
         if (!storedOrderId) {
           const orderResponse = await fetch(
-            "https://api.kaya.ng/kaya-api/get-nearby-orders.php",
+            "https://api.kaya.ng/kaya-api/rider/get-nearby-orders.php",
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -801,7 +801,7 @@ function FareIncreaseInterface({
       let storedOrderId = sessionStorage.getItem("ride_order_id");
       if (!storedOrderId) {
         const orderResponse = await fetch(
-          "https://api.kaya.ng/kaya-api/get-nearby-orders.php",
+          "https://api.kaya.ng/kaya-api/rider/get-nearby-orders.php",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

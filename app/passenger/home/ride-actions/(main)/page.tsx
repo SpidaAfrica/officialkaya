@@ -313,7 +313,7 @@ function SendDriverMessage({ riderPhone }: SendDriverMessageProps) {
   useEffect(() => {
     // Runs only in browser
     if (typeof window !== "undefined") {
-      const storedOrderId = localStorage.getItem("order id"); // 👈 exact key
+      const storedOrderId = localStorage.getItem("order_id"); // 👈 exact key
 
       if (storedOrderId) {
         setPackageId(storedOrderId);

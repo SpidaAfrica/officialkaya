@@ -38,3 +38,27 @@ CREATE TABLE ride_requests (
   KEY idx_ride_requests_rider (rider_id),
   KEY idx_ride_requests_status (status)
 );
+
+CREATE TABLE chat_sessions (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  package_id INT UNSIGNED NOT NULL,
+  user_id INT UNSIGNED NOT NULL,
+  rider_id INT UNSIGNED NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_chat_sessions_package (package_id),
+  KEY idx_chat_sessions_user (user_id),
+  KEY idx_chat_sessions_rider (rider_id)
+);
+
+CREATE TABLE chat_messages (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  chat_id INT UNSIGNED NOT NULL,
+  sender_id INT UNSIGNED NOT NULL,
+  receiver_id INT UNSIGNED NOT NULL,
+  package_id INT UNSIGNED NOT NULL,
+  content TEXT NULL,
+  audio_url VARCHAR(255) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_chat_messages_chat (chat_id),
+  KEY idx_chat_messages_package (package_id)
+);

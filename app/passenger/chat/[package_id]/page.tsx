@@ -44,13 +44,18 @@ export default function MessagingPage() {
   const [loading, setLoading] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const params = useParams();
-  const packageId = params.package_id;
+  const packageId = Array.isArray(params.package_id)
+    ? params.package_id[0]
+    : params.package_id;
+  const chatBase = process.env.NEXT_PUBLIC_CHAT_API_BASE ?? "/backend/chat";
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
 
   const [senderId, setSenderId] = useState<number | null>(null);
   const [receiverId, setReceiverId] = useState<number | null>(null);
+  const [riderDetails, setRiderDetails] = useState<RiderDetails | null>(null);
+  const [isRiderLoading, setIsRiderLoading] = useState(false);
 
   const ws = useRef<WebSocket | null>(null);
 
@@ -71,6 +76,13 @@ export default function MessagingPage() {
     created_at?: string;
     timestamp?: string | number | Date;  // ✅ Added
     //status?: string; 
+  };
+
+  type RiderDetails = {
+    rider_id: number;
+    full_name: string;
+    phone?: string | null;
+    rating?: number | null;
   };
 
   useEffect(() => {
@@ -120,7 +132,7 @@ export default function MessagingPage() {
       const currentUserId = Number(sessionStorage.getItem("userId"));
       if (!currentUserId || !packageId) return;
 
-      const response = await fetch(`https://api.kaya.ng/kaya-api/chat/get-chat-id.php?package_id=${packageId}`);
+      const response = await fetch(`${chatBase}/get-chat-id.php?package_id=${packageId}`);
       const result = await response.json();
 
         if (result.status === 'success') {
@@ -151,7 +163,29 @@ export default function MessagingPage() {
   }
 
   fetchSenderReceiver();
-}, [packageId]);
+}, [packageId, chatBase]);
+
+useEffect(() => {
+  async function fetchRiderDetails() {
+    if (!packageId) return;
+    setIsRiderLoading(true);
+    try {
+      const response = await fetch(`${chatBase}/get-rider-details.php?package_id=${packageId}`);
+      const result = await response.json();
+      if (result.status === "success") {
+        setRiderDetails(result.rider);
+      } else {
+        console.error("Failed to load rider details:", result.message);
+      }
+    } catch (error) {
+      console.error("Failed to fetch rider details:", error);
+    } finally {
+      setIsRiderLoading(false);
+    }
+  }
+
+  fetchRiderDetails();
+}, [packageId, chatBase]);
 
 
   // ✅ Connect WebSocket
@@ -178,7 +212,8 @@ export default function MessagingPage() {
 
 const fetchMessages = async () => {
   try {
-    const res = await fetch(`https://api.kaya.ng/kaya-api/chat/fetch-messages.php?package_id=${packageId}`);
+    if (!packageId) return;
+    const res = await fetch(`${chatBase}/fetch-messages.php?package_id=${packageId}`);
     const response = await res.json();
 
     if (response.success) {
@@ -193,12 +228,12 @@ const fetchMessages = async () => {
 
 useEffect(() => {
   fetchMessages(); // runs once on initial load
-}, []);
+}, [packageId, chatBase]);
   
 
   // ✅ Sending messages
 const sendMessage = async () => {
-  if (!newMessage.trim() || senderId === null || receiverId === null) return;
+  if (!newMessage.trim() || senderId === null || receiverId === null || !packageId) return;
 
   const payload = {
     sender_id: senderId,
@@ -209,7 +244,7 @@ const sendMessage = async () => {
 
   try {
     // Send to API
-    await fetch('https://api.kaya.ng/kaya-api/chat/send-message.php', {
+    await fetch(`${chatBase}/send-message.php`, {
       method: 'POST',
       body: JSON.stringify(payload),
       headers: {
@@ -254,7 +289,7 @@ const handleMicClick = async () => {
       formData.append('package_id', String(packageId));
           
 
-      fetch('https://api.kaya.ng/kaya-api/chat/send-audio.php', {
+      fetch(`${chatBase}/send-audio.php`, {
         method: 'POST',
         body: formData,
       }).catch(console.error);
@@ -286,19 +321,34 @@ const handleMicClick = async () => {
                   <div className="flex items-center gap-4">
                     <Image src={RiderAvatar} alt="rider" />
                     <div>
-                      <p>Matthew Aaron</p>
-                      {/*
-                      <div className="flex items-center gap-2">
-                        <p>Rider</p>
-                        <Image src={StarRating} alt="rating" />
-                        <span>4.5</span>
+                      <p>{riderDetails?.full_name ?? "Rider"}</p>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>Rider</span>
+                        {typeof riderDetails?.rating === "number" && (
+                          <>
+                            <Image src={StarRating} alt="rating" />
+                            <span>{riderDetails.rating.toFixed(1)}</span>
+                          </>
+                        )}
+                        {isRiderLoading && <span>Loading...</span>}
                       </div>
-                      */}
                     </div>
                   </div>
                   <div className="flex items-center gap-3 text-lg text-primary">
-                    <Phone />
-                    <p className="hidden lg:inline-block">call user</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (riderDetails?.phone) {
+                          window.location.href = `tel:${riderDetails.phone}`;
+                        }
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <Phone />
+                      <span className="hidden lg:inline-block">
+                        {riderDetails?.phone ? `Call ${riderDetails.phone}` : "Call rider"}
+                      </span>
+                    </button>
                     <DropdownMenu>
                       <DropdownMenuTrigger className="lg:hidden w-8 h-8 rounded-full flex items-center justify-center">
                         <MoreVertical />

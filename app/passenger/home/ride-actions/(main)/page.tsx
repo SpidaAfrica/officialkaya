@@ -301,7 +301,7 @@ interface SendDriverMessageProps {
   riderPhone: string;
 }
 
-function SendDriverMessage({ riderPhone }) {
+function SendDriverMessage({ riderPhone }: SendDriverMessageProps) {
   const [open, setOpen] = useState(false);
   const [packageId, setPackageId] = useState(null);
 

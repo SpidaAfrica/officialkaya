@@ -304,9 +304,12 @@ interface SendDriverMessageProps {
 function SendDriverMessage({ riderPhone }: SendDriverMessageProps) {
   const [open, setOpen] = useState(false);
   const [packageId, setPackageId] = useState<string | null>(null);
-
+  const handleCall = () => {
+    window.location.href = `tel:${riderPhone}`;
+    setOpen(false);
+  };
   useEffect(() => {
-    const storedOrderId = localStorage.getItem("order id"); // your key
+    const storedOrderId = localStorage.getItem("order_id"); // your key
     if (storedOrderId) {
       setPackageId(storedOrderId);
     } else {

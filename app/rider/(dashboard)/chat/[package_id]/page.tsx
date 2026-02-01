@@ -44,7 +44,10 @@ export default function MessagingPage() {
   const [loading, setLoading] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const params = useParams();
-  const packageId = params.package_id;
+  const packageId = Array.isArray(params.package_id)
+    ? params.package_id[0]
+    : params.package_id;
+  const chatBase = process.env.NEXT_PUBLIC_CHAT_API_BASE ?? "/backend/chat";
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -120,7 +123,7 @@ export default function MessagingPage() {
       const currentUserId = Number(sessionStorage.getItem("rider_id"));
       if (!currentUserId || !packageId) return;
 
-      const response = await fetch(`https://api.kaya.ng/kaya-api/chat/get-chat-id.php?package_id=${packageId}`);
+      const response = await fetch(`${chatBase}/get-chat-id.php?package_id=${packageId}`);
       const result = await response.json();
 
         if (result.status === 'success') {
@@ -151,7 +154,7 @@ export default function MessagingPage() {
   }
 
   fetchSenderReceiver();
-}, [packageId]);
+}, [packageId, chatBase]);
 
 
   // ✅ Connect WebSocket
@@ -178,7 +181,8 @@ export default function MessagingPage() {
 
 const fetchMessages = async () => {
   try {
-    const res = await fetch(`https://api.kaya.ng/kaya-api/chat/fetch-messages.php?package_id=${packageId}`);
+    if (!packageId) return;
+    const res = await fetch(`${chatBase}/fetch-messages.php?package_id=${packageId}`);
     const response = await res.json();
 
     if (response.success) {
@@ -194,13 +198,13 @@ const fetchMessages = async () => {
 
 useEffect(() => {
   fetchMessages(); // runs once on initial load
-}, []);
+}, [packageId, chatBase]);
 
   
 
   // ✅ Sending messages
 const sendMessage = async () => {
-  if (!newMessage.trim() || senderId === null || receiverId === null) return;
+  if (!newMessage.trim() || senderId === null || receiverId === null || !packageId) return;
 
   const payload = {
     sender_id: senderId,
@@ -211,7 +215,7 @@ const sendMessage = async () => {
 
   try {
     // Send to API
-    await fetch('https://api.kaya.ng/kaya-api/chat/send-message.php', {
+    await fetch(`${chatBase}/send-message.php`, {
       method: 'POST',
       body: JSON.stringify(payload),
       headers: {
@@ -256,7 +260,7 @@ const handleMicClick = async () => {
       formData.append('package_id', String(packageId));
           
 
-      fetch('https://api.kaya.ng/kaya-api/chat/send-audio.php', {
+      fetch(`${chatBase}/send-audio.php`, {
         method: 'POST',
         body: formData,
       }).catch(console.error);

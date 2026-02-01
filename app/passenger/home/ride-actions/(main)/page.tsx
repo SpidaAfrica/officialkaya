@@ -303,27 +303,17 @@ interface SendDriverMessageProps {
 
 function SendDriverMessage({ riderPhone }: SendDriverMessageProps) {
   const [open, setOpen] = useState(false);
-  const [packageId, setPackageId] = useState<string | null>(null);
   const handleCall = () => {
     window.location.href = `tel:${riderPhone}`;
     setOpen(false);
   };
-  useEffect(() => {
-    const storedOrderId = localStorage.getItem("order_id"); // your key
-    if (storedOrderId) {
-      setPackageId(storedOrderId);
-    } else {
-      console.warn("order id not found in localStorage");
-    }
-  }, []);
-
-  if (!packageId) return null;
+const orderId = localStorage("order_id");
 
   return (
     <div className="flex items-center bg-background p-3 gap-3 justify-between">
       {/* Chat link */}
       <Link
-        href={`/passenger/chat/${packageId}`}
+        href={`/passenger/chat/${orderId}`}
         className="flex items-center gap-3 flex-1"
       >
         <div className="bg-[#B47818]/10 p-3 rounded-full">

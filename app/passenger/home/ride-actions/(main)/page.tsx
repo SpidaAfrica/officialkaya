@@ -301,56 +301,38 @@ interface SendDriverMessageProps {
   riderPhone: string;
 }
 
-function SendDriverMessage({ riderPhone }: SendDriverMessageProps) {
+function SendDriverMessage({ riderPhone }) {
   const [open, setOpen] = useState(false);
+  const [packageId, setPackageId] = useState(null);
 
   const handleCall = () => {
     window.location.href = `tel:${riderPhone}`;
     setOpen(false);
   };
-const [packageId, setPackageId] = useState(null);
 
   useEffect(() => {
-    // Make sure this runs only in the browser
-    if (typeof window !== 'undefined') {
-      const storedUserId = localStorage.getItem('userId');
+    // Runs only in browser
+    if (typeof window !== "undefined") {
+      const storedOrderId = localStorage.getItem("order id"); // 👈 exact key
 
-      if (storedUserId) {
-        getLatestPackage(storedUserId);
+      if (storedOrderId) {
+        setPackageId(storedOrderId);
       } else {
-        console.warn("User ID not found in localStorage");
+        console.warn("order id not found in localStorage");
       }
     }
   }, []);
 
-  const getLatestPackage = async (userId: string) => {
-    try {
-      const formData = new FormData();
-      formData.append('user_id', userId);
-
-      const response = await fetch('https://api.kaya.ng/kaya-api/get-package-id.php', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        console.log("Latest package_id:", data.package_id);
-        setPackageId(data.package_id);
-      } else {
-        console.error("Error:", data.message);
-      }
-    } catch (error) {
-      console.error("Fetch error:", error);
-    }
-  };
+  // Prevent rendering link until we have packageId
+  if (!packageId) return null;
 
   return (
-  <>
     <div className="flex items-center bg-background p-3 gap-3 justify-between">
       {/* Chat link */}
-      <Link href={`/passenger/chat/${packageId}`} className="flex items-center gap-3 flex-1">
+      <Link
+        href={`/passenger/chat/${packageId}`}
+        className="flex items-center gap-3 flex-1"
+      >
         <div className="bg-[#B47818]/10 p-3 rounded-full">
           <Image src={MessageIconSquare} alt="message" />
         </div>
@@ -364,11 +346,13 @@ const [packageId, setPackageId] = useState(null);
             <Phone className="fill-foreground/80 stroke-none" />
           </button>
         </DialogTrigger>
+
         <DialogContent className="max-w-sm bg-white">
           <DialogTitle>Call Rider</DialogTitle>
           <DialogDescription>
             Do you want to call the rider at <strong>{riderPhone}</strong>?
           </DialogDescription>
+
           <div className="flex justify-end gap-2 pt-4">
             <Button variant="ghost" onClick={() => setOpen(false)}>
               Cancel
@@ -378,7 +362,6 @@ const [packageId, setPackageId] = useState(null);
         </DialogContent>
       </Dialog>
     </div>
-  </>
   );
 }
 

@@ -163,7 +163,7 @@ export default function MessagingPage() {
   }
 
   fetchSenderReceiver();
-}, [packageId, chatBase]);
+}, [packageId]);
 
 useEffect(() => {
   async function fetchRiderDetails() {
@@ -185,7 +185,7 @@ useEffect(() => {
   }
 
   fetchRiderDetails();
-}, [packageId, chatBase]);
+}, [packageId]);
 
 
   // ✅ Connect WebSocket
@@ -228,7 +228,7 @@ const fetchMessages = async () => {
 
 useEffect(() => {
   fetchMessages(); // runs once on initial load
-}, [packageId, chatBase]);
+}, [packageId]);
   
 
   // ✅ Sending messages

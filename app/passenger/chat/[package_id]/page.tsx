@@ -47,7 +47,7 @@ export default function MessagingPage() {
   const packageId = Array.isArray(params.package_id)
     ? params.package_id[0]
     : params.package_id;
-  const chatBase = process.env.NEXT_PUBLIC_CHAT_API_BASE ?? "/api.kaya.ng/kaya-api/chat";
+  const chatBase = process.env.NEXT_PUBLIC_CHAT_API_BASE ?? "/kaya-api/chat";
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");

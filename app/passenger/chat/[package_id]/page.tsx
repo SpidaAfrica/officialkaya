@@ -47,7 +47,7 @@ export default function MessagingPage() {
   const packageId = Array.isArray(params.package_id)
     ? params.package_id[0]
     : params.package_id;
-  const chatBase = process.env.NEXT_PUBLIC_CHAT_API_BASE ?? "/kaya-api/chat";
+  //const chatBase = process.env.NEXT_PUBLIC_CHAT_API_BASE ?? "/kaya-api/chat";
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -132,7 +132,7 @@ export default function MessagingPage() {
       const currentUserId = Number(sessionStorage.getItem("userId"));
       if (!currentUserId || !packageId) return;
 
-      const response = await fetch(`${chatBase}/get-chat-id.php?package_id=${packageId}`);
+      const response = await fetch(`https://api.kaya.ng/kaya-api/chat/get-chat-id.php?package_id=${packageId}`);
       const result = await response.json();
 
         if (result.status === 'success') {
@@ -170,7 +170,7 @@ useEffect(() => {
     if (!packageId) return;
     setIsRiderLoading(true);
     try {
-      const response = await fetch(`${chatBase}/get-rider-details.php?package_id=${packageId}`);
+      const response = await fetch(`https://api.kaya.ng/kaya-api/chat/get-rider-details.php?package_id=${packageId}`);
       const result = await response.json();
       if (result.status === "success") {
         setRiderDetails(result.rider);
@@ -213,7 +213,7 @@ useEffect(() => {
 const fetchMessages = async () => {
   try {
     if (!packageId) return;
-    const res = await fetch(`${chatBase}/fetch-messages.php?package_id=${packageId}`);
+    const res = await fetch(`https://api.kaya.ng/kaya-api/chat/fetch-messages.php?package_id=${packageId}`);
     const response = await res.json();
 
     if (response.success) {

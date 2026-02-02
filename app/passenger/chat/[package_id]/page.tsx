@@ -244,7 +244,7 @@ const sendMessage = async () => {
 
   try {
     // Send to API
-    await fetch(`${chatBase}/send-message.php`, {
+    await fetch(`https://api.kaya.ng/kaya-api/chat/send-message.php`, {
       method: 'POST',
       body: JSON.stringify(payload),
       headers: {

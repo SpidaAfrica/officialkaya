@@ -307,7 +307,10 @@ function SendDriverMessage({ riderPhone }: SendDriverMessageProps) {
     window.location.href = `tel:${riderPhone}`;
     setOpen(false);
   };
-const orderId = localStorage("order_id");
+useEffect(() => {
+const orderId = localStorage.getItem("order_id");
+}, []);
+;
 
   return (
     <div className="flex items-center bg-background p-3 gap-3 justify-between">

@@ -289,7 +289,7 @@ const handleMicClick = async () => {
       formData.append('package_id', String(packageId));
           
 
-      fetch(`${chatBase}/send-audio.php`, {
+      fetch(`https://api.kaya.ng/kaya-api/chat/send-audio.php`, {
         method: 'POST',
         body: formData,
       }).catch(console.error);
